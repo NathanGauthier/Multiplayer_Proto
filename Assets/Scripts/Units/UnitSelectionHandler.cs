@@ -48,11 +48,13 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void StarSelectionArea()
     {
-        foreach(Unit selectedUnit in selectedUnits)
+        if(!Keyboard.current.leftShiftKey.isPressed)
+       {    foreach(Unit selectedUnit in selectedUnits)
             {
-            selectedUnit.Deselect();
+                selectedUnit.Deselect();
             }
             selectedUnits.Clear();
+       }
 
             unitSelectionArea.gameObject.SetActive(true);
 
@@ -103,6 +105,10 @@ public class UnitSelectionHandler : MonoBehaviour
         Vector2 max = unitSelectionArea.anchoredPosition + (unitSelectionArea.sizeDelta / 2);
         foreach(Unit unit in player.GetMyUnits())
         {
+            if(selectedUnits.Contains(unit))
+            {
+                continue;
+            }
             Vector3 screenPosition = mainCamera.WorldToScreenPoint(unit.transform.position);
             if(screenPosition.x > min.x &&
               screenPosition.x < max.x &&
