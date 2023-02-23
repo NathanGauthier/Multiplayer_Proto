@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -182,6 +182,14 @@ PrefabInstance:
       propertyPath: offlineScene
       value: Assets/Scenes/Scene_Menu.unity
       objectReference: {fileID: 0}
+    - target: {fileID: 6538861183857509829, guid: cb4d6f99af150df4393f3ea0bbae3d41, type: 3}
+      propertyPath: spawnPrefabs.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6538861183857509829, guid: cb4d6f99af150df4393f3ea0bbae3d41, type: 3}
+      propertyPath: spawnPrefabs.Array.data[2]
+      value: 
+      objectReference: {fileID: 6402702579912112643, guid: 365d81ebcae2cea40adbee7a5d8a3a2d, type: 3}
     - target: {fileID: 6538861183857509830, guid: cb4d6f99af150df4393f3ea0bbae3d41, type: 3}
       propertyPath: m_Name
       value: NetworkManager
