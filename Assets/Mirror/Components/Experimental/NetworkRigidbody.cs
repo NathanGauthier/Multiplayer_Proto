@@ -190,7 +190,7 @@ namespace Mirror.Experimental
         /// <summary>
         /// Uses Command to send values to server
         /// </summary>
-        [Client]
+        [ClientCallback]
         void SendToServer()
         {
             if (!hasAuthority)
@@ -203,7 +203,7 @@ namespace Mirror.Experimental
             SendRigidBodySettings();
         }
 
-        [Client]
+        [ClientCallback]
         void SendVelocity()
         {
             float now = Time.time;
@@ -238,7 +238,7 @@ namespace Mirror.Experimental
             }
         }
 
-        [Client]
+        [ClientCallback]
         void SendRigidBodySettings()
         {
             // These shouldn't change often so it is ok to send in their own Command

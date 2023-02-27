@@ -1,22 +1,31 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Mirror;
+using UnityEngine;
 
 public class Targeter : NetworkBehaviour
 {
     private Targetable target;
-    
 
     public Targetable GetTarget()
     {
         return target;
     }
 
-    [Command]
-    public void CmdSetTarget(GameObject targetGO)
+    public override void OnStartServer()
     {
-        if(!targetGO.TryGetComponent<Targetable>(out Targetable newTarget)) return ;
+        GameOverHandler.ServerOnGameOver += ServerHandleGameOver;
+    }
+
+    public override void OnStopServer()
+    {
+        GameOverHandler.ServerOnGameOver -= ServerHandleGameOver;
+    }
+
+    [Command]
+    public void CmdSetTarget(GameObject targetGameObject)
+    {
+        if (!targetGameObject.TryGetComponent<Targetable>(out Targetable newTarget)) { return; }
 
         target = newTarget;
     }
@@ -25,5 +34,11 @@ public class Targeter : NetworkBehaviour
     public void ClearTarget()
     {
         target = null;
+    }
+
+    [ServerCallback]
+    private void ServerHandleGameOver()
+    {
+        ClearTarget();
     }
 }

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &832229799763919271
+--- !u!1 &1452489812557203989
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8879870294766952041}
-  - component: {fileID: 2676945287051175924}
-  - component: {fileID: 8835091172136400089}
+  - component: {fileID: 7332355683797322540}
+  - component: {fileID: 994831090973110805}
+  - component: {fileID: 1759307774366896849}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -18,13 +18,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8879870294766952041
+--- !u!4 &7332355683797322540
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 832229799763919271}
+  m_GameObject: {fileID: 1452489812557203989}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -32,13 +32,13 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2676945287051175924
+--- !u!114 &994831090973110805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 832229799763919271}
+  m_GameObject: {fileID: 1452489812557203989}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
@@ -48,18 +48,24 @@ MonoBehaviour:
   serverOnly: 0
   m_AssetId: 
   hasSpawned: 0
---- !u!114 &8835091172136400089
+--- !u!114 &1759307774366896849
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 832229799763919271}
+  m_GameObject: {fileID: 1452489812557203989}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37738201186ddd048a60cb56325b7606, type: 3}
+  m_Script: {fileID: 11500000, guid: 60109ebd121bb9e4897e82387d31a792, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  myUnits: []
+  buildingBlockLayer:
+    serializedVersion: 2
+    m_Bits: 1281
+  buildings:
+  - {fileID: 6818829978409247728, guid: 59bc3f6a85dd04e4abfbeb735b836a5f, type: 3}
+  - {fileID: 6818829978409247728, guid: 7ce718c9d8abed0428d8a6278b0970a4, type: 3}
+  buildingRangeLimit: 5

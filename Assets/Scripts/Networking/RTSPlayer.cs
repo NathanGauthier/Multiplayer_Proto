@@ -1,70 +1,190 @@
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Mirror;
+using UnityEngine;
 
 public class RTSPlayer : NetworkBehaviour
 {
-   [SerializeField] private List<Unit> myUnits = new List<Unit>();
+    [SerializeField] private LayerMask buildingBlockLayer = new LayerMask();
+    [SerializeField] private Building[] buildings = new Building[0];
+    [SerializeField] private float buildingRangeLimit = 5f;
 
-   public List<Unit> GetMyUnits() {return myUnits;}
+    [SyncVar(hook = nameof(ClientHandleResourcesUpdated))]
+    private int resources = 500;
 
-#region Server
+    public event Action<int> ClientOnResourcesUpdated;
+
+    private List<Unit> myUnits = new List<Unit>();
+    private List<Building> myBuildings = new List<Building>();
+
+    public int GetResources()
+    {
+        return resources;
+    }
+
+    public List<Unit> GetMyUnits()
+    {
+        return myUnits;
+    }
+
+    public List<Building> GetMyBuildings()
+    {
+        return myBuildings;
+    }
+
+    [ServerCallback]
+    public void SetResources(int newResources)
+    {
+        resources = newResources;
+    }
+
+    public bool CanPlaceBuilding(BoxCollider buildingCollider, Vector3 point)
+    {
+        if (Physics.CheckBox(
+                    point + buildingCollider.center,
+                    buildingCollider.size / 2,
+                    Quaternion.identity,
+                    buildingBlockLayer))
+        {
+            return false;
+        }
+
+        foreach (Building building in myBuildings)
+        {
+            if ((point - building.transform.position).sqrMagnitude
+                <= buildingRangeLimit * buildingRangeLimit)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    #region Server
+
     public override void OnStartServer()
     {
-        Unit.ServerOnUnitSpawned += Unit_ServerOnUnitSpawned;
-        Unit.ServerOnUnitDespawned += Unit_ServerOnUnitDespawned;
+        Unit.ServerOnUnitSpawned += ServerHandleUnitSpawned;
+        Unit.ServerOnUnitDespawned += ServerHandleUnitDespawned;
+        Building.ServerOnBuildingSpawned += ServerHandleBuildingSpawned;
+        Building.ServerOnBuildingDespawned += ServerHandleBuildingDespawned;
     }
 
     public override void OnStopServer()
     {
-        Unit.ServerOnUnitSpawned -= Unit_ServerOnUnitSpawned;
-        Unit.ServerOnUnitDespawned -= Unit_ServerOnUnitDespawned;
+        Unit.ServerOnUnitSpawned -= ServerHandleUnitSpawned;
+        Unit.ServerOnUnitDespawned -= ServerHandleUnitDespawned;
+        Building.ServerOnBuildingSpawned -= ServerHandleBuildingSpawned;
+        Building.ServerOnBuildingDespawned -= ServerHandleBuildingDespawned;
     }
 
-    private void Unit_ServerOnUnitSpawned (Unit unit)
+    [Command]
+    public void CmdTryPlaceBuilding(int buildingId, Vector3 point)
     {
-        if(unit.connectionToClient.connectionId != connectionToClient.connectionId) return ;
+        Building buildingToPlace = null;
+
+        foreach (Building building in buildings)
+        {
+            if (building.GetId() == buildingId)
+            {
+                buildingToPlace = building;
+                break;
+            }
+        }
+
+        if (buildingToPlace == null) { return; }
+
+        if (resources < buildingToPlace.GetPrice()) { return; }
+
+        BoxCollider buildingCollider = buildingToPlace.GetComponent<BoxCollider>();
+
+        if (!CanPlaceBuilding(buildingCollider, point)) { return; }
+
+        GameObject buildingInstance =
+            Instantiate(buildingToPlace.gameObject, point, buildingToPlace.transform.rotation);
+
+        NetworkServer.Spawn(buildingInstance, connectionToClient);
+
+        SetResources(resources - buildingToPlace.GetPrice());
+    }
+
+    private void ServerHandleUnitSpawned(Unit unit)
+    {
+        if (unit.connectionToClient.connectionId != connectionToClient.connectionId) { return; }
 
         myUnits.Add(unit);
     }
 
-    private void Unit_ServerOnUnitDespawned (Unit unit)
+    private void ServerHandleUnitDespawned(Unit unit)
     {
-        if(unit.connectionToClient.connectionId != connectionToClient.connectionId) return ;
+        if (unit.connectionToClient.connectionId != connectionToClient.connectionId) { return; }
 
         myUnits.Remove(unit);
     }
+
+    private void ServerHandleBuildingSpawned(Building building)
+    {
+        if (building.connectionToClient.connectionId != connectionToClient.connectionId) { return; }
+
+        myBuildings.Add(building);
+    }
+
+    private void ServerHandleBuildingDespawned(Building building)
+    {
+        if (building.connectionToClient.connectionId != connectionToClient.connectionId) { return; }
+
+        myBuildings.Remove(building);
+    }
+
     #endregion
 
     #region Client
 
-    public override void OnStartClient()
+    public override void OnStartAuthority()
     {
-        if(isServer) return ;
+        if (NetworkServer.active) { return; }
 
-        Unit.AuthorityOnUnitSpawned += Unit_AuthorityOnUnitSpawned;
-        Unit.AuthorityOnUnitDespawned += Unit_AuthorityOnUnitDespawned;
+        Unit.AuthorityOnUnitSpawned += AuthorityHandleUnitSpawned;
+        Unit.AuthorityOnUnitDespawned += AuthorityHandleUnitDespawned;
+        Building.AuthorityOnBuildingSpawned += AuthorityHandleBuildingSpawned;
+        Building.AuthorityOnBuildingDespawned += AuthorityHandleBuildingDespawned;
     }
-    
+
     public override void OnStopClient()
     {
-        if(isServer) return ;
+        if (!isClientOnly || !hasAuthority) { return; }
 
-        Unit.AuthorityOnUnitSpawned -= Unit_AuthorityOnUnitSpawned;
-        Unit.AuthorityOnUnitDespawned -= Unit_AuthorityOnUnitDespawned;
+        Unit.AuthorityOnUnitSpawned -= AuthorityHandleUnitSpawned;
+        Unit.AuthorityOnUnitDespawned -= AuthorityHandleUnitDespawned;
+        Building.AuthorityOnBuildingSpawned -= AuthorityHandleBuildingSpawned;
+        Building.AuthorityOnBuildingDespawned -= AuthorityHandleBuildingDespawned;
     }
 
-    private void Unit_AuthorityOnUnitSpawned (Unit unit)
+    private void ClientHandleResourcesUpdated(int oldResources, int newResources)
     {
-        if(!hasAuthority) return;
+        ClientOnResourcesUpdated?.Invoke(newResources);
+    }
+
+    private void AuthorityHandleUnitSpawned(Unit unit)
+    {
         myUnits.Add(unit);
     }
 
-    private void Unit_AuthorityOnUnitDespawned (Unit unit)
+    private void AuthorityHandleUnitDespawned(Unit unit)
     {
-        if(!hasAuthority) return;
         myUnits.Remove(unit);
+    }
+
+    private void AuthorityHandleBuildingSpawned(Building building)
+    {
+        myBuildings.Add(building);
+    }
+
+    private void AuthorityHandleBuildingDespawned(Building building)
+    {
+        myBuildings.Remove(building);
     }
 
     #endregion

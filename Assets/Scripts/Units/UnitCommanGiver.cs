@@ -40,7 +40,7 @@ public class UnitCommanGiver : MonoBehaviour
 
     private void TryMove(Vector3 point)
     {
-        foreach ( Unit unit in unitSelectionHandler.selectedUnits)
+        foreach ( Unit unit in unitSelectionHandler.SelectedUnits)
         {
             unit.GetUnitMovement().CmdMove(point);
         }
@@ -48,7 +48,7 @@ public class UnitCommanGiver : MonoBehaviour
 
      private void TryTarget(Targetable target)
     {
-        foreach ( Unit unit in unitSelectionHandler.selectedUnits)
+        foreach ( Unit unit in unitSelectionHandler.SelectedUnits)
         {
             unit.GetTargeter().CmdSetTarget(target.gameObject);
         }
